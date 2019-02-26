@@ -1,5 +1,6 @@
 #include "layer_2.h"
 #include "layer_1.h"
+#include "raid_defines.h"
 
 int compute_nstripe(int nblock, virtual_disk_t virtual_disk)
 {
