@@ -52,12 +52,12 @@ void write_stripe(stripe_t stripe, int pos, virtual_disk_t disk)
 }
 
 
-void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk){
+void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk, int startblock){
 
 	// 1 - Calculer le nombre de bande (compute nstripe)
 
 	int nblock = compute_nblock(noctet);
-	int nstripes = compute_nstripe(nblock);
+	int nstripes = compute_nstripe(nblock - 1);
 
 	// 2 - Créer un tableau pour chaque bande, écrire dedans puis créer le block de parité
 
@@ -78,15 +78,14 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk){
 
 		index_parity = parity_index(i, disk);
 
-		
-		for (int j = 0 ; j < nbdisk ; j++)
+		for (int j = 0 ; j < nbdisk ; j++)	//Pour chaque bloc d'une bande
 		{
 			if(indiceblock != index_parity)
 			{
 
 				int indiceblock = 0;
 
-				while(indicebuffer < noctet && indiceblock != )
+				while(indicebuffer < noctet && indiceblock != tabstripe[i].nblocks)	//Tant qu'on est pas à la fin du buffer et qu'on a pas dépasser la limite du bloc
 				{
 					tabstripe[i].stripe[j].data[indiceblock] = buffer[indicebuffer];
 					indicebuffer++;
@@ -97,13 +96,19 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk){
 			
 		}
 
+		// 3 - Mettre dans le bon odre les éléments du tableau (--> prévoir une case vide dans le tableau fait dans 2 pour y ajouter ensuite le block de parité) + compléter les fin de bandes (0 0 0 0) (à confirmer sujet)
+		
 		parity = compute_parity(nbdisk, tabstripe[i].stripe);
 
 		tabstripe[i].stripe[index_parity] = parity;
 		
+		// 4 - écrire dans le systeme avec write_stripe chaque bande 
+
+		write_stripe(tabstripe[i], disk, startblock);
+
+		startblock += tabstripe[i].nblocks;
+		
 	}
 
-	// 3 - Mettre dans le bon odre les éléments du tableau (--> prévoir une case vide dans le tableau fait dans 2 pour y ajouter ensuite le block de parité) + compléter les fin de bandes (0 0 0 0) (à confirmer sujet)
-	// 4 - écrire dans le systeme avec write_stripe chaque bande 
 }
 
