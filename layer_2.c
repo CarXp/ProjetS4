@@ -61,7 +61,6 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk, int startblock)
 	//On calcule le nombre de bloc de parité qu'il faut rajouter
 	nblock+=nblock/(disk.ndisk-1)+1;
 	int nstripes = compute_nstripe(nblock,disk);
-	printf("Il faut %d blocks : %d stripes pour %d octets à écrire\n",nblock,nstripes,noctet);
 
 	// 2 - Créer un tableau pour chaque bande, écrire dedans puis créer le block de parité
 
@@ -99,12 +98,8 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk, int startblock)
 			}
 			
 		}
-		printf("Stripe numéro %d\n",i);
 		// 3 - Mettre dans le bon odre les éléments du tableau (--> prévoir une case vide dans le tableau fait dans 2 pour y ajouter ensuite le block de parité) + compléter les fin de bandes (0 0 0 0) (à confirmer sujet)
 		parity = compute_parity(tabstripe[i].stripe,tabstripe[i].nblocks);
-
-		//affichage_block(parity);
-		printf("\n");
 
 		tabstripe[i].stripe[index_parity] = parity;
 		//for(int k=0;k<tabstripe[i].nblocks;k++) affichage_block(tabstripe[i].stripe[k]);
@@ -112,7 +107,6 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk, int startblock)
 		// 4 - écrire dans le systeme avec write_stripe chaque bande 
 		write_stripe(tabstripe[i], startblock, disk);
 		startblock ++;
-		printf("byte_start : %d\n",startblock);
 	}
 }	
 
@@ -148,7 +142,6 @@ void read_chunk(int start_byte, uchar buffer[], int noctet, virtual_disk_t disk)
 	//Puis on lit tous les blocks dans le buffer, sauf les block de parité
 	for(int i = 0 ; i < nstripes ; i++){
 
-		printf("Stripe numéro %d \n",i);
 		read_stripe(&stripeInter,pos,disk);
 		indParity=parity_index(pos,disk);
 

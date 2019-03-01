@@ -26,9 +26,11 @@ int main(void){
 	uchar bufferF[257];
 	read_chunk(0,bufferF,256,disk);
 
-	//for(uint i=0; i < 256 ; i++ )
-	//	printf("Octet %d = %x \n",i,bufferF[i]);
+	for(uint i=0; i < 256 ; i++ )
+		printf("Octet %d = %x \n",i,bufferF[i]);
 
+	printf("--Fin test lecture\n");
+	
 	fermeture_systeme_raid5(disk);
 	return 0;
 }
