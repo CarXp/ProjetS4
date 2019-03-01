@@ -24,7 +24,7 @@
 /* fonction init_disk_raid5 qui, à partir du nom du répertoire, initialise cette variable */
 /* et demarre le système raid5                                                            */
 /******************************************************************************************/
-void init_disk_raid5(char * dirname);
+void init_disk_raid5(char * dirname, virtual_disk_t * disk);
 
 /******************************************************************************************/
 /* fonction fermeture_systeme_raid5 qui ferme tous les fichiers (disques) et fait ensuite */
@@ -33,7 +33,7 @@ void init_disk_raid5(char * dirname);
 void fermeture_systeme_raid5(virtual_disk_t disk);
 
 /******************************************************************************************/
-/* fonction compute_nblock qui calcule le nombre de blocs n´ecessaires pour stocker un    */
+/* fonction compute_nblock qui calcule le nombre de blocs nécessaires pour stocker un    */
 /* nombre n d’octets.																	  */
 /******************************************************************************************/
 int compute_nblock(uint n);
@@ -48,7 +48,7 @@ void write_block(block_t block,int pos,int disk_id, virtual_disk_t disk);
 /* fonction read_block qui lit un bloc block de données,à la position pos sur le disque   */
 /* disk_id du système 																	  */
 /******************************************************************************************/
-void read_block(block_t *block,int pos, int disk_id,virtual_disk_t disk);
+int read_block(block_t * block,int pos, int disk_id,virtual_disk_t virtual_disk);
 
 /******************************************************************************************/
 /*  fonction block_repair qui, en cas d’erreur de lecture, reconstruit le bloc erroné 	  */
@@ -61,4 +61,4 @@ void block_repair(block_t *block,int pos,int disk_id, virtual_disk_t disk);
 /******************************************************************************************/
 void affichage_block(block_t block);
 
-#endif LAYER_1
+#endif //LAYER_1

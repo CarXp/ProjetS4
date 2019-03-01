@@ -1,22 +1,27 @@
 # DEBUT DU MAKEFILE
 
-EXEC = projet
+EXEC = main
 CC = gcc
 CFLAGS = -Wall -Werror
-LDFLAGS =
 
 all: $(EXEC)
 
-$(EXEC): main.o couche1.o
-	$(CC) -o $(EXEC) main.o couche1.o $(CFLAGS)
+$(EXEC): main.o layer_1.o layer_2.o
+	$(CC) -o $(EXEC) main.o layer_1.o layer_2.o $(CFLAGS)
 
 main.o: main.c
 	$(CC) -c main.c -o main.o $(FLAGS)
 
+layer_1.o: layer_1.c 
+	$(CC) -c layer_1.c -o layer_1.o $(FLAGS)
+
+layer_2.o: layer_2.c 
+	$(CC) -c layer_2.c -o layer_2.o $(FLAGS)
+
 clean:
-	@rm -rf *.o
+	rm -rf *.o
 
 mrproper: clean
-	@rm -rf $(EXEC)
+	rm -rf $(EXEC)
 
 # FIN DU MAKEFILE

@@ -25,13 +25,13 @@
 /* fonction compute_nstripe qui calcule le nombre de bandes nécessaires pour stocker un	  */
 /* nombre n de blocs.																	  */
 /******************************************************************************************/
-int compute_nstripe(uint n);
+int compute_nstripe(uint n,virtual_disk_t virtual_disk);
 
 /******************************************************************************************/
 /* fonction compute_parity qui, à partir d’un ensemble de nblocks blocs d’une bande       */
 /* calcule le bloc de parité															  */
 /******************************************************************************************/
-block_t compute_parity(int nBlocks, block_t tabBlock[]);
+block_t compute_parity(block_t * tabBlocks, int nblocks);
 
 /******************************************************************************************/
 /* fonction compute_parity_index qui à partir d’un numéro de bande calcule le numéro du   */
@@ -43,25 +43,25 @@ int compute_parity_index(int numBande);
 /* fonction write_stripe qui écrit une bande de blocs et un bloc de parité, à la position */
 /* pos sur le système 																	  */
 /******************************************************************************************/
-void write_stripe(stripe_t stripe,virtual_disk_t disk,int pos);
+void write_stripe(stripe_t stripe,int pos, virtual_disk_t disk);
 
 /******************************************************************************************/
 /* fonction write_chunk qui, à partir d’un tableau de n octets buffer, l’ecrit sur le 	  */
 /* systeme RAID5 a partir de la position startbyte indiquant la position dans la listes   */
 /* complete des blocs de donnees sur le systeme. 										  */
 /******************************************************************************************/
-void write_chunk(uint startbyte, virtual_disk_t disk, uint buffer[],int nbOctets);
+void write_chunk(uchar buffer[], int noctets, virtual_disk_t disk, int startblock);
 
 /******************************************************************************************/
 /* fonction read_stripe qui lit une bande de blocs et un bloc de parité, à la position    */
 /* pos sur le systeme et elle renvoie un code d'erreur: A PRECISER						  */
 /******************************************************************************************/
-int read_stripe(int pos,virtual_disk_t disk);
+int read_stripe(stripe_t * stripe, int pos, virtual_disk_t disk);
 
 /******************************************************************************************/
 /*  fonction read_chunk qui lit, à partir de la position start_byte, un tableau buffer de */
 /*  n octets, en reconstruisant les blocks qui ne peuvent etre lus						  */				
 /******************************************************************************************/
-void read_chunk(int start_byte,virtual_disk_t disk);
+void read_chunk(int start_byte, uchar buffer[], int noctet, virtual_disk_t disk);
 
 #endif //LAYER_2
