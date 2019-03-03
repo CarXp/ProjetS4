@@ -1,32 +1,38 @@
 #include "raid_defines.h"
 #include "layer_1.h"
+#include "layer_3.h"
 
 /* fonction init_disk_raid5 qui initialise le systeme raid5 à son ouverture */
-void init_disk_raid5(char *dirname,virtual_disk_t *disk){
+void init_disk_raid5(char *dirname, virtual_disk_t *disk){
 	//Ouverture des fichiers et initialisation du tableau STORAGE
 
 	//Mode raid5
-	disk->raidmode=CINQ;
-	disk->ndisk=4;
-	disk->number_of_files=4;
-	char fname[20];
+	disk->raidmode = CINQ;
+	disk->ndisk = 4;
+	disk->number_of_files = 4;
+	char fname[FILENAME_MAX_SIZE];
 
-	disk->storage=malloc(4*sizeof(FILE*));
+	disk->storage = malloc(4 * sizeof(FILE*));
 
-	for(int i=0; i < 4; i++){
-		sprintf(fname,"../RAID5/d%d",i);
-		disk->storage[i]=fopen(fname,"r+b");
-		printf("%s\n",fname);
+	for(int i = 0 ; i < 4 ; i++){
+		sprintf(fname,"../RAID5/d%d", i);
+		disk->storage[i]=  fopen(fname, "r+b");
+		printf("%s\n", fname);
 	}
 
-	//Récupération des infos sur le super_blocko
-	/*
+	//Récupération des infos sur le super_block
+	
+	inode_table_t table_inode;
+
+	table_inode = read_inodes_table(&disk);
+
 	super_block_t sblock;
-	sblock.raid_type=RAID5;	
-	sblock.nb_block_used=A_DETERMINER_AVEC_FICHIER
-	sblock.first_free_byte=A_DETERMINER_AVEC_FICHIER
-	disk->super_block=sblock;
-	*/
+	
+	sblock.raid_type = CINQ;	
+	sblock.nb_block_used = table_inode[0].nblock;
+	sblock.first_free_byte = table_inode[0].size;
+
+	disk->super_block = sblock;
 }
 
 
@@ -34,8 +40,8 @@ void init_disk_raid5(char *dirname,virtual_disk_t *disk){
 void fermeture_systeme_raid5(virtual_disk_t disk)
 {
 	printf("--Fermeture du systeme...\n");
-	for(int i=0;i<disk.ndisk;i++){
-		printf("Disque %d éteint\n",i);
+	for(int i = 0 ; i < disk.ndisk ; i++){
+		printf("Disque %d éteint\n", i);
 		fclose(disk.storage[i]);
 	}
 	printf("--Fermeture effctuée.\n");
@@ -45,8 +51,8 @@ void fermeture_systeme_raid5(virtual_disk_t disk)
 
 int compute_nblock(uint n){
 	uint res = n/4;
-	if(n%4!=0){
-		return res+1;
+	if(n % 4 != 0){
+		return res + 1;
 	}
 	return res;
 }
