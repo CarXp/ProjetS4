@@ -21,7 +21,7 @@ void init_disk_raid5(char *dirname, virtual_disk_t *disk){
 	}
 
 	//Récupération des infos sur le super_block
-	
+	/*
 	inode_table_t table_inode;
 
 	table_inode = read_inodes_table(&disk);
@@ -33,6 +33,7 @@ void init_disk_raid5(char *dirname, virtual_disk_t *disk){
 	sblock.first_free_byte = table_inode[0].size;
 
 	disk->super_block = sblock;
+	*/
 }
 
 
@@ -48,10 +49,10 @@ void fermeture_systeme_raid5(virtual_disk_t disk)
 }
 	
 
-
+/* fonction compute_nblock qui détermine le nombre de block qu'il faut dans le systeme RAID5 pour écrire n octets (block de parité non inclus) */
 int compute_nblock(uint n){
-	uint res = n/4;
-	if(n % 4 != 0){
+	uint res = n/BLOCK_SIZE;
+	if(n % BLOCK_SIZE != 0){
 		return res + 1;
 	}
 	return res;
@@ -86,67 +87,31 @@ int read_block(block_t * block, int pos, int disk_id, virtual_disk_t virtual_dis
     return SUCCESS;
 }
 
+/* fonction repair qui répare un block en cas de problème: xor des autres blocs */
+void repair(block_t block, int pos, int disk_id, virtual_disk_t disk){
+	block_t newBlock;
+	uchar charInter = 0;
+	block_t inter;
 
-
-/* fonction repair qui, en cas de problème de lecture de bloc, le répare grâce au bloc de parité */
-/* V1 */
-/*
-void repair(block_t block, int pos, int disk_id, virtual_disk_t virtual_disk)
-{
-    uchar xor[BLOCK_SIZE];
-    block_t block_tmp; 
-
-    for (int i = 0 ; i < virtual_disk.ndisk ; i++)
-    {
-        if (i != disk_id)
-        {
-            read(block_tmp, pos, i, virtual_disk);
-            xor ^= block_tmp.data;
-        }
-    }
-
-    block.data = xor;
-
-}
-*/
-/* FIN V1 */
-
-
-/* V2.1 */
-/*
-void repair(block_t block, stripe_t bande, int pos, int disk_id, virtual_disk_t disk)
-{
-	//2 méthodes possibles: utilisation de la bande OU lecture directement sur le fichier de chaque block
-	//Ici méthode 1: utilisation de la bande
-	//Fonction auxiliaire: calcul_id_parity qui détermine à quelle position se trouve le bloc de parité en fonction de la pos du block à réparer dans le disque disk_id
-
-	char charRep;
-	int idParity = calcul_id_parity(disk_id, disk);
-
-	//On regarde pour chaque caractère 
-	for(int idC = 0 ;idC < BLOCK_SIZE; idC++){
-		charRep = 0 ;
-
-		//Pour chaque bloc de la bande sauf celui à réparer
-		for(int idB = 0 ;idB < bande.nblocks; idB++){
-			if(idB != )
-			//On fait le xor de chaque caractère
-			charRep ^= bande.stripe[idB].[idC];
+	/* Pour chaque caractère */
+	for(int idC = 0; idC < BLOCK_SIZE; idC ++){
+		/* pour chaque autre block */
+		for(int idBlock = 0; idBlock < disk.ndisk ; idBlock++){
+			if(idBlock != disk_id){
+				read_block(&inter, pos, idBlock, disk);
+				charInter ^= inter.data[idC];
+			}
 		}
-
-		//On remplace le caractère dans le bloc à réparer
-		block.data[idC] = charRep;
+		newBlock.data[idC] = charInter;
 	}
 
-	//Enfin, on re écrit dans le fichier le nouveau block
-	write_block(block, pos, disk_id, disk);
+	block = newBlock;
 }
-*/
-/* FIN V2.1 */
 
 
+/* fonction affichage_block qui affiche les données du block en hexadecimal */
 void affichage_block(block_t block)
 {
     for (int i = 0 ; i < BLOCK_SIZE ; i++)
-        printf("Octet %d = %x\n", i, block.data[i]);
+        printf("Octet %d = 0x%x\n", i, block.data[i]);
 }
