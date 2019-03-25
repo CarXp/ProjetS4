@@ -25,7 +25,7 @@
 /******************************************************************************************/
 /* fonction read inodes table permettant de charger la table d’inodes depuis RAID5        */
 /******************************************************************************************/
-inode_table_t read_inodes_table(virtual_disk_t disk);
+void read_inodes_table(inode_t inode);
 
 
 
@@ -41,7 +41,7 @@ void write_inodes_table(inode_table_t inodes);
 /* stockés sur le RAID5, les n premières entrées de la table d’inodes correspondent à	  */
 /* ces fichiers																			  */
 /******************************************************************************************/
-void delete_inode(inode_table_t inodes,int indice);
+void delete_inode(inode_table_t * inodes,int indice);
 
 
 /******************************************************************************************/
@@ -55,24 +55,24 @@ int get_unused_inode(inode_table_t inodes);
 /* fonction init_inode qui initialise un inode à partir d’un nom de fichier, de sa taille */ 
 /* et de sa position sur le système RAID5												  */
 /******************************************************************************************/
-void init_inode(inode_t inode,char * fname,uint taille, int pos);
+inode_t init_inode(char * fname,uint taille, int pos, virtual_disk_t disk);
 
 
 /******************************************************************************************/
 /* fonction write_super_block qui écrit le super bloc au tout début du RAID 			  */
 /******************************************************************************************/
-void write_super_block(super_block_t sblock,virtual_disk_t disk);
+void write_super_block(virtual_disk_t disk);
 
 
 /******************************************************************************************/
 /* fonction read_super_block qui lit le super bloc au tout début du RAID                  */
 /******************************************************************************************/
-void read_super_block(virtual_disk_t disk);
+void read_super_block(virtual_disk_t * disk);
 
 
 /******************************************************************************************/
 /*	fonction set_first_free_byte qui met à jour le champs first free byte du super block  */
 /******************************************************************************************/
-void set_first_free_byte(super_block_t sblock,uint value);
+void set_first_free_byte(super_block_t * sblock,uint value);
 
 #endif //LAYER_3
