@@ -36,7 +36,7 @@ void write_file(char * fname, file_t file, virtual_disk_t disk);
 /* une variable de type file_t qui contiendra le fichier lu. Retourne 0 si fichier non    */
 /* et 1 si fichier disponible															  */
 /******************************************************************************************/
-int read_file(char * fname,file_t file);
+int read_file(char * fname,file_t * file);
 
 
 /******************************************************************************************/
@@ -44,19 +44,19 @@ int read_file(char * fname,file_t file);
 /* correspondant à ce fichier. Cette fonction retourne 1 en cas de suppression et 0 si le */
 /* chier n’est pas présent sur le système RAID5.										  */
 /******************************************************************************************/
-int delete_file(char *fname);
+int delete_file(char *fname, virtual_disk_t disk);
 
 
 /******************************************************************************************/
 /* fonction load_file from host qui prend en parametre le nom d’un fichier de             */ 
 /* l’ordinateur (nommé host) et l’´ecrit sur le systeme RAID 							  */
 /******************************************************************************************/
-void load_file(char *fname);
+void load_file_from_host(char *fname, virtual_disk_t disk);
 
 /******************************************************************************************/
 /* fonction store_file to host qui prend en parametre le nom d’un fichier du syteme       */
 /* RAID et l’ecrit sur l’ordinateur hote												  */
 /******************************************************************************************/
-void store_file(char * fname);
+void store_file_to_host(char * fname, virtual_disk_t disk);
 
 #endif //LAYER_4
