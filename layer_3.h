@@ -25,14 +25,14 @@
 /******************************************************************************************/
 /* fonction read inodes table permettant de charger la table d’inodes depuis RAID5        */
 /******************************************************************************************/
-void read_inodes_table(inode_t inode);
+void read_inode_table(virtual_disk_t * disk);
 
 
 
 /******************************************************************************************/
 /* fonction write_inodes_table permettant d’´ecrire la table d’inodes sur RAID5           */
 /******************************************************************************************/
-void write_inodes_table(inode_table_t inodes);
+void write_inode_table(inode_table_t inodes, virtual_disk_t disk);
 
 
 /******************************************************************************************/

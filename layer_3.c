@@ -7,33 +7,58 @@
 //xINODES_TABLES_SIZE//////////////
 //raidtype/nb_block_used/firstbyte/
 ///////////////////////////////////
-/*
-inode_table_t read_inodes_table(virtual_disk_t disk)
-{
-    inote_table_t inodes[INODES_TABLE_SIZE];
-    uchar nameInter[MAX_FILE_NAME_SIZE];
-    uchar intInter[4];
-    inode_t inoteInter;
 
-    for(int i = 1; i <= INODES_TABLE_SIZE; i ++){
-    	/* lecture du nom */
-    	//read_chunk(0, nameInter, MAX_FILE_NAME_SIZE, disk);
-    	//strcpy(nameInter, inoteInter.filename);
 
-    	/* lecture de size */
-    	//read_chunk(i * MAX_FILE_NAME_SIZE, intInter, MAX_FILE_SIZE, disk);
-    	//inoteInter.size = atoi(intInter);
+int endian(uchar *buf,int sz){
+  int nb = 0;
+  int dix_i = 1;
+  for (int i=0;i<sz;i++){
+    nb = nb+dix_i*buf[i];
+    dix_i = dix_i*10;
+  }
+  return nb;
+}
 
-    	/* lecture de nblocks */
-    	//compute_nblock(inodeInter.size);
-    	//inodeInter.nblocks = compute_nblock(inodeInter.size);
-    	//inodeInter.nblocks += inodeInter.nblocks/(disk.ndisk-1)+1;
 
-    	/* lecture first_byte */
-    	//read_chunk(i * ())
-    //}
-//}
+void write_inode_table(inode_table_t tab_inode, virtual_disk_t disk){
+    //On détermine d'abord le nombre de bloc + nombre de bande pour déterminer l'espace de chaque inode dans le systeme
+    int nb_blocks = compute_nblock(sizeof(inode_t));
+    //Ajout des block de parité
+    nb_blocks += nb_blocks/(disk.ndisk-1)+1;
+    //Calcul du nombre de bande donc de l'espace utilisé
+    int espace = compute_nstripe(nb_blocks, disk);
 
+
+    uchar * buffer;
+    inode_t inter;
+    //On écrit donc chaque inode
+    for(int i = 0; i< INODE_TABLE_SIZE ; i++){
+        inter = tab_inode[i];
+        //Cast de l'inode pour l'écriture
+        buffer = (uchar *) &inter;
+        write_chunk(buffer, sizeof(inode_t), disk, 1 + (i*espace));
+    }
+}
+
+
+void read_inode_table(virtual_disk_t * disk){
+    //On détermine d'abord le nombre de bloc + nombre de bande pour déterminer l'espace de chaque inode dans le systeme
+    int nb_blocks = compute_nblock(sizeof(inode_t));
+    //Ajout des block de parité
+    nb_blocks += nb_blocks/(disk->ndisk-1)+1;
+    //Calcul du nombre de bande donc de l'espace utilisé
+    int espace = compute_nstripe(nb_blocks, *disk);
+
+    inode_t * inter;
+    uchar buffer[INODE_TABLE_SIZE * sizeof(inode_t)];
+    for(int i = 0; i< INODE_TABLE_SIZE; i++){
+        //Lecture de chaque élément et cast de l'information
+        read_chunk(1 + (i*espace), buffer, sizeof(inode_t), *disk);
+        inter = (inode_t *) buffer;
+        disk -> inodes[i] = *inter;
+    }
+
+}
 
 
 
@@ -68,71 +93,26 @@ int get_unused_inode(inode_table_t tab_inode){
     //Si il n'y a pas de place disponible, on retourne la taille maximale de la table d'inode (10 dans notre cas)
     return INODE_TABLE_SIZE;
 }
-    
+        
 
 void write_super_block(virtual_disk_t disk){
     super_block_t sblock = disk.super_block;
-    uchar buffer[BLOCK_SIZE * (SUPER_BLOCK_SIZE-1)];
-    uchar inter[BLOCK_SIZE];
-    uchar inter2[BLOCK_SIZE];
-
-    uchar salutcv = (uchar) sblock.raid_type;
-
-    write_chunk(&salutcv, 1, disk, 0);
-
-
+    unsigned char * octets;
+    octets = (unsigned char*) &sblock;
+    write_chunk(octets, 12, disk, 101);
 }
 
 
 
 
 void read_super_block(virtual_disk_t * disk){
-    //Création du super_block
-    super_block_t sblock;
-    int param = 0;
-    uchar tab_inter[BLOCK_SIZE];
-
-    //Lecture des informations sur le systeme
-    uchar tab_lecture[BLOCK_SIZE * SUPER_BLOCK_SIZE];
-    read_chunk(0, tab_lecture, BLOCK_SIZE * (SUPER_BLOCK_SIZE-1), *disk);
-    for(int i = 0; i < BLOCK_SIZE * (SUPER_BLOCK_SIZE-1); i++) printf("%x ", tab_lecture[i]);
-    printf("\n");
-
-    //La lecture a été effectuée, il faut maintenant séparer les informations
-    for(unsigned int j = 0; j < BLOCK_SIZE * (SUPER_BLOCK_SIZE-1); j += BLOCK_SIZE){
-        int fin = j + BLOCK_SIZE;
-        int id_tab_inter = 0;
-
-        switch(param){
-            //Case 0: on traite le RAIDTYPE 
-            case 0: for(int a = j; a < fin ; a++){
-                        tab_inter[id_tab_inter] = tab_lecture[a];
-                        id_tab_inter++;
-                    }
-                    sblock.raid_type = atoi(tab_inter);
-                    break;
-
-            //Case 1: on traite le nombre de block utilisés
-            case 1: for(int a = j; a < fin ; a++){
-                        tab_inter[id_tab_inter] = tab_lecture[a];
-                        id_tab_inter++;
-                    } 
-                    sblock.nb_blocks_used = atoi(tab_inter);
-                    break;
-
-            //Case 2: on traite le premier octet disponible
-            case 2: for(int a = j; a < fin ; a++) {
-                        tab_inter[id_tab_inter++] = tab_lecture[a];
-                        id_tab_inter ++;
-                    }
-                    sblock.first_free_byte = atoi(tab_inter);
-                    break;
-        }
-
-        param++;
-    }
-
-    disk -> super_block = sblock;
+    //Lecture du superblock sur le systeme (position 0)
+    //La taille d'un superblock est de 12 (3 entiers)
+    uchar octets[12];
+    read_chunk(101, octets, 12, *disk);
+    //Une fois que la lecture est effectuée, on sépare les informations
+    super_block_t * pSB = (super_block_t *)octets;
+    disk -> super_block = *pSB;
 }
 
 

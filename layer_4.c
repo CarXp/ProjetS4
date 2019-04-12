@@ -5,7 +5,8 @@
 #include "layer_4.h"
 #include <stdbool.h>
 #include <string.h>
-
+#include <unistd.h>
+#include <sys/types.h>
 
 
 //La fonction find_inode renvoie l'indice de l'inode dans la table d'inode qui correspond au fichier demandé
@@ -18,8 +19,25 @@ int find_inode(inode_table_t tab_i, char * filename){
 }
 
 
-void write_file(char * fname, file_t file, virtual_disk_t disk){
-
+void write_file(char * fname, file_t file, virtual_disk_t * disk){
+	//On regarde si le fichier n'est pas deja présent
+	int inodeId = find_inode(disk -> inodes, fname);
+	//Si le fichier existe
+	if(inodeId != INODE_TABLE_SIZE){
+		//Si la taille est inférieure ou égale au fichier présent, on re écris ce même fichier dans le systeme
+		if(file.size <= disk -> inodes[inodeId]){
+			write_chunk(file.data, file.size, *disk, disk->inodes[inodeId].first_byte);
+			disk -> inodes[inodeId] -> size = file.size;
+		}
+		//Sinon, on doit écrire le fichier à la fin du systeme et supprimer l'inode correspondante au premier fichier
+		else{
+			delete_inode(disk -> inodes, inodeId);
+			int newId = get_unused_inode(disk -> inodes);
+			inode_t newInode = init_inode(fname, file.size, disk -> superblock -> first_free_byte +1, *disk);
+			write_chunk(file.data, file.size, *disk, newInode.first_byte);
+			disk->number_of_file ++;
+		}
+	}
 }
 
 
@@ -82,4 +100,22 @@ void load_file_from_host(char *fname, virtual_disk_t disk){
 	else{
 		printf("Erreur, fichier non existant\n");
 	}
+}
+
+
+void store_file_to_host(char * fname, virtual_disk_t disk){
+	int inodeId = find_inode(disk.inodes, fname);
+	if(inodeId == INODE_TABLE_SIZE)
+		printf("Erreur: le fichier n'existe pas sur le systeme\n");
+	else{
+		//Lecture du fichier
+		uchar buffer[disk.inodes[inodeId].size];
+		read_chunk(disk.inodes[inodeId].first_byte, buffer, disk.inodes[inodeId].size, disk);
+		int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC, S_IRWXU);
+		if(fd != -1)
+			write(fd, buffer, disk.inodes[inodeId].size);
+		else
+			printf("Erreur lors de l'écriture\n");
+	}
+
 }

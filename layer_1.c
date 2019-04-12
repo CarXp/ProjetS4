@@ -34,7 +34,7 @@ void init_disk_raid5(char *dirname, virtual_disk_t *disk){
 
 	disk->super_block = sblock;
 	*/
-}
+}	
 
 
 /* fonction fermeture_systeme_raid5 qui ferme le systeme: vérification pour éviter les pertes + fermeture des fichiers */
@@ -64,7 +64,7 @@ int compute_nblock(uint n){
 void write_block(block_t block, int pos, int disk_id, virtual_disk_t virtual_disk)
 {
     FILE * fichier = virtual_disk.storage[disk_id];
-    fseek(fichier, pos*4, SEEK_SET);
+    fseek(fichier, pos*BLOCK_SIZE, SEEK_SET);
 
     fwrite(block.data, sizeof(uchar), BLOCK_SIZE, fichier);
 }
