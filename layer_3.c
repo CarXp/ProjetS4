@@ -8,16 +8,9 @@
 //raidtype/nb_block_used/firstbyte/
 ///////////////////////////////////
 
+extern virtual_disk_t disktest;
 
-int endian(uchar *buf,int sz){
-  int nb = 0;
-  int dix_i = 1;
-  for (int i=0;i<sz;i++){
-    nb = nb+dix_i*buf[i];
-    dix_i = dix_i*10;
-  }
-  return nb;
-}
+
 
 
 void write_inode_table(inode_table_t tab_inode, virtual_disk_t disk){
@@ -63,7 +56,6 @@ void read_inode_table(virtual_disk_t * disk){
 
 
 void delete_inode(inode_table_t  * inode, int indice){
-    assert(indice >=0 && indice<INODE_TABLE_SIZE);
     
     //On "détruit" l'inode présente à l'indice indice
     inode[indice] -> first_byte = 0;
@@ -97,9 +89,9 @@ int get_unused_inode(inode_table_t tab_inode){
 
 void write_super_block(virtual_disk_t disk){
     super_block_t sblock = disk.super_block;
-    unsigned char * octets;
-    octets = (unsigned char*) &sblock;
-    write_chunk(octets, 12, disk, 101);
+    uchar * octets;
+    octets = (uchar*) &sblock;
+    write_chunk(octets, 12, disk, 0);
 }
 
 
@@ -109,7 +101,7 @@ void read_super_block(virtual_disk_t * disk){
     //Lecture du superblock sur le systeme (position 0)
     //La taille d'un superblock est de 12 (3 entiers)
     uchar octets[12];
-    read_chunk(101, octets, 12, *disk);
+    read_chunk(0, octets, 12, *disk);
     //Une fois que la lecture est effectuée, on sépare les informations
     super_block_t * pSB = (super_block_t *)octets;
     disk -> super_block = *pSB;

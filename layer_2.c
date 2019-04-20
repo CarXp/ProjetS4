@@ -121,7 +121,7 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk, int startblock)
 	nblock+=nblock/(disk.ndisk-1)+1;
 	//printf("nbblock = %d\n",nblock);
 	int nstripes = compute_nstripe(nblock,disk);
-	printf("Il faut %d blocks : %d stripes pour %d octets à écrire\n",nblock,nstripes,noctet);
+	// printf("Il faut %d blocks : %d stripes pour %d octets à écrire\n",nblock,nstripes,noctet);
 
 	// 2 - Créer un tableau pour chaque bande, écrire dedans puis créer le block de parité
 
@@ -159,6 +159,8 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk, int startblock)
 		parity = compute_parity(tabstripe[i].stripe,tabstripe[i].nblocks);
 
 		tabstripe[i].stripe[index_parity] = parity;
+		// for(int k =0; k < 4; k++)
+		// 	printf("%s\n",tabstripe[i].stripe[k].data);
 
 		// 4 - écrire dans le systeme avec write_stripe chaque bande 
 
@@ -217,12 +219,17 @@ void read_chunk(int start_byte, uchar buffer[], int noctet, virtual_disk_t disk)
 			{
 				while(idChar < BLOCK_SIZE && indice_buffer < noctet)
 				{
+					//printf("idbuf = %d - char = %c\n",indice_buffer, stripeInter.stripe[j].data[idChar]);
 					buffer[indice_buffer] = stripeInter.stripe[j].data[idChar];
 					indice_buffer++;
 					idChar++;
+
 				}
 			}
 		}
 		pos++;
 	}
+			//printf("indice buff = %d\n",indice_buffer);
+			buffer[indice_buffer] = '\0';
+			//printf("%s\n",buffer);
 }
