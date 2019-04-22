@@ -145,7 +145,7 @@ void write_chunk(uchar buffer[],int noctet, virtual_disk_t disk, int startblock)
 			if(j != index_parity)
 			{
 				int indiceblock=0;
-				while(indicebuffer < noctet && indiceblock != tabstripe[i].nblocks)	//Tant qu'on est pas à la fin du buffer et qu'on a pas dépasser la limite du bloc
+				while(indicebuffer < noctet && indiceblock != BLOCK_SIZE)	//Tant qu'on est pas à la fin du buffer et qu'on a pas dépasser la limite du bloc
 				{
 					tabstripe[i].stripe[j].data[indiceblock] = buffer[indicebuffer];
 					indicebuffer++;
